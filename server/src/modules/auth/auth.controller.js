@@ -6,6 +6,7 @@ import {
   storeOtp, verifyOtp, findOrCreateUser, generateTokens, generateOtp,
   createUserWithPassword, findUserByIdentifier, verifyPassword,
 } from "./auth.service.js";
+import { sendOtpSms } from "./sms.service.js";
 
 // Never send the full DB row (it contains password_hash!)
 const toClientUser = (user) => ({
@@ -56,11 +57,18 @@ const login = async (req, res) => {
 const sendOtp = async (req, res) => {
   const { phone } = req.body;
   if (!phone) throw new AppError("Enter phone number", 400);
+  // Twilio needs E.164 format: +<countrycode><number>
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+    throw new AppError("Phone must be in international format, e.g. +91XXXXXXXXXX", 400);
+  }
   const otp = generateOtp();
   await storeOtp(phone, otp);
-  // Dev mode: OTP goes to the console instead of SMS (no Twilio needed)
-  logger.info(`OTP for ${phone}: ${otp}`);
-  res.json({ success: true, message: "OTP sent successfully" });
+  // Sends real SMS when TWILIO_* env vars are set; logs to console otherwise
+  const result = await sendOtpSms(phone, otp);
+  res.json({
+    success: true,
+    message: result.delivered ? "OTP sent via SMS" : "OTP sent successfully",
+  });
 };
 
 const verifyOTP = async (req, res) => {
