@@ -140,6 +140,24 @@ const createRideRequest = async (riderId, data) => {
     });
   }
 
+  // BUG FIX: same rider must not join the same ride twice (duplicate
+  // fares/payments). If they already have a non-cancelled participant
+  // row, return it instead of inserting another.
+  const existingParticipant = await query(
+    `SELECT * FROM ride_participants
+     WHERE ride_id = $1 AND rider_id = $2 AND status != 'cancelled'
+     LIMIT 1`,
+    [ride.id, riderId],
+  );
+  if (existingParticipant.rows[0]) {
+    const hydrated = await getRideById(ride.id, riderId);
+    return {
+      ride: hydrated || ride,
+      participant: existingParticipant.rows[0],
+      alreadyRequested: true,
+    };
+  }
+
   const participant = await joinRide(ride.id, riderId, {
     pickupLng: data.pickupLng,
     pickupLat: data.pickupLat,
@@ -279,13 +297,13 @@ const updateParticipantStatus = async (
   const result = await query(
     `UPDATE ride_participants rp
      SET
-      status = $4,
+      status = $4::text,
       picked_up_at = CASE
-        WHEN $4 = 'picked_up' THEN NOW()
+        WHEN $4::text = 'picked_up' THEN NOW()
         ELSE rp.picked_up_at
       END,
       dropped_off_at = CASE
-        WHEN $4 = 'dropped_off' THEN NOW()
+        WHEN $4::text = 'dropped_off' THEN NOW()
         ELSE rp.dropped_off_at
       END
      FROM rides r
