@@ -59,11 +59,13 @@ export default function Wallet() {
   if (!wallet) return <AppShell>{error ? <Alert>{error}</Alert> : <Spinner full />}</AppShell>;
 
   return (
-    <AppShell>
+    <AppShell wide>
       <h1 className="text-2xl font-bold">Wallet</h1>
 
+      <div className="mt-6 grid items-start gap-8 lg:grid-cols-[400px,1fr]">
+      <div>
       {/* Balance card */}
-      <div className="mt-4 rounded-2xl bg-brand-600 p-6 text-white shadow-md">
+      <div className="rounded-2xl bg-brand-600 p-6 text-white shadow-md">
         <p className="text-sm font-medium text-brand-100">Available balance</p>
         <p className="mt-1 text-4xl font-bold">Rs {Number(wallet.balance).toFixed(2)}</p>
       </div>
@@ -96,8 +98,11 @@ export default function Wallet() {
       )}
       {!mode && <div className="mt-3"><Alert>{error}</Alert></div>}
 
+      </div>
+
       {/* Transaction history */}
-      <h2 className="mt-6 text-sm font-semibold uppercase tracking-wide text-gray-400">History</h2>
+      <div>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400 lg:mt-0">History</h2>
       <ul className="mt-2 space-y-2">
         {txns.length === 0 && <li className="text-sm text-gray-500">No transactions yet.</li>}
         {txns.map((t) => (
@@ -115,6 +120,8 @@ export default function Wallet() {
           </li>
         ))}
       </ul>
+      </div>
+      </div>
     </AppShell>
   );
 }

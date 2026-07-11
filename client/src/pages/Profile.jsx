@@ -38,7 +38,9 @@ export default function Profile() {
   const name = user.full_name || user.fullName || "You";
 
   return (
-    <AppShell>
+    <AppShell wide>
+      <div className="grid items-start gap-8 lg:grid-cols-[420px,1fr]">
+      <div>
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-2xl font-bold text-brand-700">
           {name.trim().charAt(0).toUpperCase()}
@@ -92,8 +94,12 @@ export default function Profile() {
         </div>
       )}
 
+      </div>
+
       {/* Links to the rest of the account area */}
-      <ul className="mt-6 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">Account</h2>
+      <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {[
           { to: "/vehicles", label: "My vehicles" },
           { to: "/notifications", label: "Notifications" },
@@ -110,8 +116,10 @@ export default function Profile() {
         ))}
       </ul>
 
-      <div className="mt-6">
+      <div className="mt-6 max-w-xs">
         <Button variant="danger" onClick={logout}>Log out</Button>
+      </div>
+      </div>
       </div>
     </AppShell>
   );
